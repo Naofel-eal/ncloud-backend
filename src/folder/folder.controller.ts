@@ -35,7 +35,6 @@ export class FolderController {
     @UseGuards(JwtAuthGuard)
     @Post('move')
     async moveFoldersAndFiles(@Request() req:any) {
-        console.log("MOVING")
         return await this.folderService.moveFoldersAndFiles(req.user.id, req.body.selectedFoldersID, req.body.selectedFilesID, req.body.targetFolderID);
     }
 }

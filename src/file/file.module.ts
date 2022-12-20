@@ -7,7 +7,7 @@ import { UserModule } from '../user/user.module';
 import { FolderModule } from '../folder/folder.module';
 
 @Module({
-    imports : [TypeOrmModule.forFeature([File]), UserModule, forwardRef(() => FolderModule)],
+    imports : [TypeOrmModule.forFeature([File]), forwardRef(() => UserModule), forwardRef(() => FolderModule)],
     controllers : [FileController],
     providers: [FileService],
     exports: [FileService],

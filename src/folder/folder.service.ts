@@ -10,13 +10,10 @@ import { FileService } from '../file/file.service';
 @Injectable()
 export class FolderService {
     constructor(@InjectRepository(Folder) private folderRepository: Repository<Folder>,
-    @Inject(forwardRef(() => FileService))
-    private fileService: FileService,
+    @Inject(forwardRef(() => FileService)) private readonly fileService: FileService,
     ) {}
     @Inject(UserService)
     private readonly userService : UserService;
-
-   // private fileService : FileService;
     
     async createFolder(userID : number, folderName: string, parentFolderID : number): Promise<Folder> {
         const user = await this.userService.getUserByID(userID);
@@ -50,6 +47,15 @@ export class FolderService {
     }
 
     async getFolderByID(folderID : number) : Promise<Folder> {
+        const folder = await this.folderRepository
+        .createQueryBuilder('folder')
+        .where("folder.id = :folderID", { folderID })
+        .getOne();
+
+        return folder;
+    }
+
+    async getFullFolderByID(folderID : number) : Promise<Folder> {
         const folder = await this.folderRepository
         .createQueryBuilder('folder')
         .leftJoinAndSelect('folder.userID', 'user')
@@ -88,28 +94,28 @@ export class FolderService {
     async moveFoldersAndFiles(userID, selectedFoldersID, selectedFilesID, targetFolderID) {
         if(selectedFoldersID.length == 0 && selectedFilesID.length == 0)
             return null
-        
         const user = await this.userService.getUserByID(userID)
         if(user === null)
             throw new ForbiddenException("USER NOT FOUND")
         
         const targetFolder = await this.getFolderByID(targetFolderID);
 
-        for(const folderID of selectedFoldersID) {
-            console.log("Dossier: ", folderID, "target", targetFolderID)
-            await this.folderRepository.createQueryBuilder()
-            .update(Folder)
-            .set({parentFolder: targetFolder})
-            .where("id = :folderID", {folderID})
-            .execute  
+        if(selectedFoldersID.length != 0) {
+            for(const folderID of selectedFoldersID) {
+                this.folderRepository.createQueryBuilder()
+                .update(Folder)
+                .set({
+                    parentFolder: targetFolder
+                })
+                .where("id = :id", { id: folderID })
+                .execute()
+            }
         }
 
-        for(const fileID of selectedFilesID) {
-            console.log(fileID, targetFolderID)
-            console.log(this.fileService)
-            await this.fileService.moveFile(fileID, targetFolderID)
-
+        if(selectedFilesID.length != 0) {
+            for(const fileID of selectedFilesID) {
+                await this.fileService.moveFile(fileID, targetFolder)
+            }        
         }
-        
     }
 }

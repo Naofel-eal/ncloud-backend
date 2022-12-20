@@ -10,8 +10,7 @@ import * as bcrypt from 'bcrypt';
 @Injectable()
 export class UserService {
   constructor(@InjectRepository(User) private userRepository: Repository<User>) {}
-  @InjectRepository(Folder)
-  private folderRepository: Repository<Folder>
+  @InjectRepository(Folder) private folderRepository: Repository<Folder>
 
   async checkIfValidUsername(username : string) : Promise<Boolean> {
     const user = await this.userRepository

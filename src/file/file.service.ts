@@ -11,8 +11,7 @@ import { secretSalt } from 'src/auth/constants';
 @Injectable()
 export class FileService {
     constructor(@InjectRepository(File) private fileRepository: Repository<File>,
-    @Inject(forwardRef(() => FolderService))
-    private folderService: FolderService) {}
+    @Inject(forwardRef(() => FolderService)) private readonly folderService: FolderService) {}
 
     @Inject(UserService)
     private readonly userService : UserService;
@@ -87,11 +86,18 @@ export class FileService {
         }
     }
 
-    async moveFile(fileID, targetFolderID) {
-        await this.fileRepository.createQueryBuilder()
-        .update(File)
-        .set({parentFolder: targetFolderID})
-        .where("id = :fileID", {fileID})
-        .execute  
+    async getFileByID(fileID : number) : Promise<File> {
+        const file = await this.fileRepository
+        .createQueryBuilder('file')
+        .where("file.id = :fileID", { fileID })
+        .getOne();
+
+        return file;
+    }
+
+    async moveFile(fileID, targetFolder) {
+        const file = await this.getFileByID(fileID);
+        file.parentFolder = targetFolder;
+        await this.fileRepository.save(file)
     }
 }
