@@ -102,13 +102,15 @@ export class FolderService {
 
         if(selectedFoldersID.length != 0) {
             for(const folderID of selectedFoldersID) {
-                this.folderRepository.createQueryBuilder()
-                .update(Folder)
-                .set({
-                    parentFolder: targetFolder
-                })
-                .where("id = :id", { id: folderID })
-                .execute()
+                if(folderID != targetFolderID) {
+                    this.folderRepository.createQueryBuilder()
+                    .update(Folder)
+                    .set({
+                        parentFolder: targetFolder
+                    })
+                    .where("id = :id", { id: folderID })
+                    .execute()
+                }
             }
         }
 
